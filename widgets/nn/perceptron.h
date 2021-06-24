@@ -23,6 +23,7 @@ class Perceptron: public QMainWindow {
 public:
     Perceptron();
     QWidget *perceptron_window;
+    void recalculate();
 
 public slots:
     //inputs
@@ -40,9 +41,14 @@ public slots:
     void weight_slider_2_changed(int value);
     void weight_slider_3_changed(int value);
     void weight_slider_4_changed(int value);
+
+    //internal
+    void internal_slider_threshold_changed(int value);
+
 private:
     int   *input_1_,  *input_2_,  *input_3_,  *input_4_;
     float *weight_1_, *weight_2_, *weight_3_, *weight_4_;
+    float *threshold;
     //colors
     const QString input_button_active_  = QString("background-color: green");
     const QString input_button_passive_ = QString("background-color: red");
@@ -101,7 +107,13 @@ private:
 
     //internal
     QLabel *internal_label_title;
+
+    QSlider *internal_slider_threshold_;
+    QLabel *internal_label_threshold_;
+    QHBoxLayout *internal_layout_threshold_;
+
     QLabel *internal_label_fa_;
+    QLabel *internal_label_fo_;
 
     QVBoxLayout *v_layout_bot_internal_;
 

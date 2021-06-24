@@ -6,8 +6,9 @@
 
 Perceptron::Perceptron() {
     //init perceptron values
-    input_1_ =  new int;   input_2_ =  new int;   input_3_ =  new int;   input_4_ =  new int;
-    weight_1_ = new float; weight_2_ = new float; weight_3_ = new float; weight_4_ = new float;
+    input_1_ =  new int(0);   input_2_ =  new int(0);   input_3_ =  new int(0);   input_4_ =  new int(0);
+    weight_1_ = new float(0); weight_2_ = new float(0); weight_3_ = new float(0); weight_4_ = new float(0);
+    threshold = new float(0);
 
     perceptron_window = new QWidget();
     perceptron_window->setStyleSheet(ombra_);
@@ -169,12 +170,27 @@ Perceptron::Perceptron() {
         internal_label_title->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
         internal_label_title->setAlignment(Qt::AlignCenter);
         internal_label_title->setFont(*title_font);
+        //threshold slider
+        internal_slider_threshold_ = new QSlider(Qt::Orientation::Horizontal);
+        internal_slider_threshold_->setMaximum(1000000);
+        internal_slider_threshold_->setTickInterval(1);
+        internal_label_threshold_ = new QLabel("threshold = ");
+        QObject::connect(internal_slider_threshold_, &QAbstractSlider::valueChanged,
+                         this, &Perceptron::internal_slider_threshold_changed);
+        internal_layout_threshold_ = new QHBoxLayout();
+        internal_layout_threshold_->addWidget(internal_slider_threshold_);
+        internal_layout_threshold_->addWidget(internal_label_threshold_);
 
-        internal_label_fa_ = new QLabel(QString::fromUtf8("fa() = \u2211 input"));
+
+        //internal_label_fa_ = new QLabel(QString::fromUtf8("fa() = \u2211 weight*input"));
+        internal_label_fa_ = new QLabel("fa() = ");
+        internal_label_fo_ = new QLabel("fo() = ");
 
         v_layout_bot_internal_ = new QVBoxLayout;
         v_layout_bot_internal_->addWidget(internal_label_title);
+        v_layout_bot_internal_->addLayout(internal_layout_threshold_);
         v_layout_bot_internal_->addWidget(internal_label_fa_);
+        v_layout_bot_internal_->addWidget(internal_label_fo_);
     }
 
 
@@ -197,21 +213,25 @@ void Perceptron::weight_slider_1_changed(int value) {
     *weight_1_ = value/1000000.0;
     std::string temp = std::to_string(*weight_1_);
     weight_label_1_->setText(QString::fromStdString(temp));
+    recalculate();
 }
 void Perceptron::weight_slider_2_changed(int value) {
     *weight_2_ = value/1000000.0;
     std::string temp = std::to_string(*weight_2_);
     weight_label_2_->setText(QString::fromStdString(temp));
+    recalculate();
 }
 void Perceptron::weight_slider_3_changed(int value) {
     *weight_3_ = value/1000000.0;
     std::string temp = std::to_string(*weight_3_);
     weight_label_3_->setText(QString::fromStdString(temp));
+    recalculate();
 }
 void Perceptron::weight_slider_4_changed(int value) {
     *weight_4_ = value/1000000.0;
     std::string temp = std::to_string(*weight_4_);
     weight_label_4_->setText(QString::fromStdString(temp));
+    recalculate();
 }
 
 void Perceptron::input_button_1_on_clicked() {
@@ -220,6 +240,7 @@ void Perceptron::input_button_1_on_clicked() {
     //set button color for visual feedback
     input_button_1_on_->setStyleSheet(input_button_active_);
     input_button_1_off_->setStyleSheet(input_button_passive_);
+    recalculate();
 
 }
 void Perceptron::input_button_1_off_clicked() {
@@ -228,6 +249,7 @@ void Perceptron::input_button_1_off_clicked() {
     //set button color for visual feedback
     input_button_1_on_->setStyleSheet(input_button_passive_);
     input_button_1_off_->setStyleSheet(input_button_active_);
+    recalculate();
 }
 void Perceptron::input_button_2_on_clicked() {
     //set internal var
@@ -235,6 +257,7 @@ void Perceptron::input_button_2_on_clicked() {
     //set button color for visual feedback
     input_button_2_on_->setStyleSheet(input_button_active_);
     input_button_2_off_->setStyleSheet(input_button_passive_);
+    recalculate();
 }
 void Perceptron::input_button_2_off_clicked() {
     //set internal var
@@ -242,6 +265,7 @@ void Perceptron::input_button_2_off_clicked() {
     //set button color for visual feedback
     input_button_2_on_->setStyleSheet(input_button_passive_);
     input_button_2_off_->setStyleSheet(input_button_active_);
+    recalculate();
 }
 void Perceptron::input_button_3_on_clicked() {
     //set internal var
@@ -249,6 +273,7 @@ void Perceptron::input_button_3_on_clicked() {
     //set button color for visual feedback
     input_button_3_on_->setStyleSheet(input_button_active_);
     input_button_3_off_->setStyleSheet(input_button_passive_);
+    recalculate();
 }
 void Perceptron::input_button_3_off_clicked() {
     //set internal var
@@ -256,6 +281,7 @@ void Perceptron::input_button_3_off_clicked() {
     //set button color for visual feedback
     input_button_3_on_->setStyleSheet(input_button_passive_);
     input_button_3_off_->setStyleSheet(input_button_active_);
+    recalculate();
 }
 void Perceptron::input_button_4_on_clicked() {
     //set internal var
@@ -263,6 +289,7 @@ void Perceptron::input_button_4_on_clicked() {
     //set button color for visual feedback
     input_button_4_on_->setStyleSheet(input_button_active_);
     input_button_4_off_->setStyleSheet(input_button_passive_);
+    recalculate();
 }
 void Perceptron::input_button_4_off_clicked() {
     //set internal var
@@ -270,6 +297,29 @@ void Perceptron::input_button_4_off_clicked() {
     //set button color for visual feedback
     input_button_4_on_->setStyleSheet(input_button_passive_);
     input_button_4_off_->setStyleSheet(input_button_active_);
+    recalculate();
+}
+
+void Perceptron::recalculate() {
+    float fa = *input_1_ * *weight_1_ + *input_2_ * *weight_2_ +
+               *input_3_ * *weight_3_ + *input_4_ * *weight_4_;
+    float fo = 0;
+    if (fa >= *threshold){
+        fo = 1;
+    } else {
+        fo = 0;
+    }
+    std::string temp = std::to_string(fa);
+    internal_label_fa_->setText(QString::fromStdString("fa = " + temp));
+    temp = std::to_string(fo);
+    internal_label_fo_->setText(QString::fromStdString("fo() = "+ temp));
+}
+
+void Perceptron::internal_slider_threshold_changed(int value) {
+    *threshold = value/1000000.0 * 4;
+    std::string temp = std::to_string(*threshold);
+    internal_label_threshold_->setText(QString::fromStdString("threshold = "+temp));
+    recalculate();
 }
 
 
